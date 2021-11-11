@@ -6,28 +6,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+
+	"github.com/wdvxdr1123/ZeroBot/utils/helper"
 )
 
 var (
 	// 先驱插件信息
-	AppInfo = newAppInfo()
+	AppInfo = &App{
+		Name:   "OneBot-YaYa",
+		Pver:   "1.2.10",
+		Sver:   3,
+		Author: "kanri",
+		Desc:   "OneBot标准的先驱实现 项目地址: http://github.com/Yiwen-Chan/OneBot-YaYa",
+	}
 	// 当前OneBot目录
-	OneBotPath = PathExecute() + "OneBot\\"
+	OneBotPath = pathExecute() + "OneBot\\"
 
-	OnMessagePrivate      = func(ctx *Context) {}
-	OnMessageGroup        = func(ctx *Context) {}
-	OnNoticeFileUpload    = func(ctx *Context) {}
-	OnNoticeAdminChange   = func(ctx *Context) {}
-	OnNoticeGroupDecrease = func(ctx *Context) {}
-	OnNoticeGroupIncrease = func(ctx *Context) {}
-	OnNoticeGroupBan      = func(ctx *Context) {}
-	OnNoticeFriendAdd     = func(ctx *Context) {}
-	OnNoticeMessageRecall = func(ctx *Context) {}
-	OnRequestFriendAdd    = func(ctx *Context) {}
-	OnRequestGroupAdd     = func(ctx *Context) {}
-	OnEnable              = func(ctx *Context) {}
-	OnDisable             = func(ctx *Context) {}
-	OnSetting             = func(ctx *Context) {}
+	OnMessagePrivate      func(ctx *Context)
+	OnMessageGroup        func(ctx *Context)
+	OnNoticeFileUpload    func(ctx *Context)
+	OnNoticeAdminChange   func(ctx *Context)
+	OnNoticeGroupDecrease func(ctx *Context)
+	OnNoticeGroupIncrease func(ctx *Context)
+	OnNoticeGroupBan      func(ctx *Context)
+	OnNoticeFriendAdd     func(ctx *Context)
+	OnNoticeMessageRecall func(ctx *Context)
+	OnRequestFriendAdd    func(ctx *Context)
+	OnRequestGroupAdd     func(ctx *Context)
+	OnEnable              func(ctx *Context)
+	OnDisable             func(ctx *Context)
+	OnSetting             func(ctx *Context)
 
 	// 信息 id 与 num 对应缓冲池
 	MessageIDCache = &CacheData{Max: 1000, Key: []interface{}{}, Value: []interface{}{}}
@@ -43,8 +51,8 @@ var (
 
 func init() {
 	// 创建数据目录
-	CreatePath(OneBotPath + "image\\")
-	CreatePath(OneBotPath + "record\\")
+	createPath(OneBotPath + "image\\")
+	createPath(OneBotPath + "record\\")
 }
 
 // App XQ要求的插件信息
@@ -54,17 +62,6 @@ type App struct {
 	Sver   int    `json:"sver"`   // 框架版本
 	Author string `json:"author"` // 作者名字
 	Desc   string `json:"desc"`   // 插件说明
-}
-
-// newAppInfo 返回插件信息
-func newAppInfo() *App {
-	return &App{
-		Name:   "OneBot-YaYa",
-		Pver:   "1.2.9",
-		Sver:   3,
-		Author: "kanri",
-		Desc:   "OneBot标准的先驱实现 项目地址: http://github.com/Yiwen-Chan/OneBot-YaYa",
-	}
 }
 
 // 上下报文，包括了上报数据以及api调用数据
@@ -77,34 +74,35 @@ type Context struct {
 //export GoCreate
 func GoCreate(version *C.char) *C.char {
 	data, _ := json.Marshal(AppInfo)
-	return CString(string(data))
+	return cString(helper.BytesToString(data))
 }
 
 //export GoSetUp
 func GoSetUp() C.int {
 	OnSetting(nil)
-	return C.int(0)
+	return 0
 }
 
 //export GoDestroyPlugin
 func GoDestroyPlugin() C.int {
-	return C.int(0)
+	runtime.GC()
+	return 0
 }
 
 //export GoEvent
 func GoEvent(cBot *C.char, cMessageType, cSubType C.int, cGroupID, cUserID, cNoticeID, cMessage, cMessageNum, cMessageID, cRawMessage, cTime *C.char, cRet C.int) C.int {
 	var (
-		bot         = CStr2GoInt(cBot)
+		bot         = cStr2GoInt(cBot)
 		messageType = int64(cMessageType)
 		subType     = int64(cSubType)
-		groupID     = CStr2GoInt(cGroupID)
-		userID      = CStr2GoInt(cUserID)
-		noticeID    = CStr2GoInt(cNoticeID)
-		message     = UnescapeEmoji(GoString(cMessage)) // 解决易语言的emoji到utf-8
-		messageNum  = CStr2GoInt(cMessageNum)
-		messageID   = CStr2GoInt(cMessageID)
-		rawMessage  = GoString(cRawMessage)
-		time        = CStr2GoInt(cTime)
+		groupID     = cStr2GoInt(cGroupID)
+		userID      = cStr2GoInt(cUserID)
+		noticeID    = cStr2GoInt(cNoticeID)
+		message     = unescapeEmoji(goString(cMessage)) // 解决易语言的emoji到utf-8
+		messageNum  = cStr2GoInt(cMessageNum)
+		messageID   = cStr2GoInt(cMessageID)
+		rawMessage  = goString(cRawMessage)
+		time        = cStr2GoInt(cTime)
 		// ret         = CStr2GoInt(cRet)
 	)
 	go func() {
@@ -113,7 +111,7 @@ func GoEvent(cBot *C.char, cMessageType, cSubType C.int, cGroupID, cUserID, cNot
 				buf := make([]byte, 1<<16)
 				runtime.Stack(buf, true)
 				ApiOutPutLog("发生不可预知错误，请[右键↓错误信息↓]并[点击查看完整消息]，截图提交到 GitHub issue 或者到 QQ群 1048452984")
-				ApiOutPutLog(fmt.Sprintf("[PANIC] [错误]：%v \n[TRACEBACK]:\n%v", err, string(buf)))
+				ApiOutPutLog(fmt.Sprintf("[PANIC] [错误]：%v \n[TRACEBACK]:\n%v", err, helper.BytesToString(buf)))
 			}
 		}()
 		switch messageType {
@@ -498,7 +496,7 @@ func GoEvent(cBot *C.char, cMessageType, cSubType C.int, cGroupID, cUserID, cNot
 			}
 			OnRequestGroupAdd(ctx)
 		case 10000:
-			go update(AppInfo.Pver, PathExecute())
+			go update(AppInfo.Pver, pathExecute())
 		case 12001:
 			OnEnable(nil)
 		case 12002:
