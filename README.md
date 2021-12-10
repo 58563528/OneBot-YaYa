@@ -22,7 +22,7 @@
 [![Commits](https://img.shields.io/badge/commits-239-green.svg?style=flat-square&logo=pinboard)](https://github.com/Yiwen-Chan/OneBot-YaYa/network/members)
 [![Release](https://img.shields.io/github/v/release/Yiwen-Chan/OneBot-YaYa?style=flat-square&logo=github)](https://github.com/Yiwen-Chan/OneBot-YaYa/releases)
 [![Downloads](https://img.shields.io/github/downloads/Yiwen-Chan/OneBot-YaYa/total?style=flat-square&logo=docusign)](https://github.com/Yiwen-Chan/OneBot-YaYa/releases)
-[![qq group](https://img.shields.io/badge/group-1048452984-red?style=flat-square&logo=tencent-qq)](https://jq.qq.com/?_wv=1027&k=QMb7x1mM)
+<!--[![qq group](https://img.shields.io/badge/group-1048452984-red?style=flat-square&logo=tencent-qq)](https://jq.qq.com/?_wv=1027&k=QMb7x1mM)-->
 
 </div>
 
