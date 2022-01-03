@@ -197,7 +197,7 @@ func (c *CacheGroupsData) GetCacheGroupMember(bot, groupID, userID int64, cache 
 	if group == nil {
 		return nil
 	}
-	members := cache.GroupMembers
+	members := group.GroupMembers
 	if members == nil {
 		return nil
 	}
