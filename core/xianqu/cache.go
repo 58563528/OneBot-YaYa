@@ -193,7 +193,11 @@ func (c *CacheGroupsData) GetCacheGroup(bot, groupID int64, cache bool) (group *
 
 // GetCacheGroupMember 获取群成员信息，不存在则请求
 func (c *CacheGroupsData) GetCacheGroupMember(bot, groupID, userID int64, cache bool) (member *GroupMember) {
-	members := c.GetCacheGroup(bot, groupID, cache).GroupMembers
+	cache := c.GetCacheGroup(bot, groupID, cache)
+	if cache == nil {
+		return nil
+	}
+	members := cache.GroupMembers
 	if members == nil {
 		return nil
 	}
